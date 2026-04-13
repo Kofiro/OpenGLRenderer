@@ -1,0 +1,150 @@
+/**
+ * 
+ * clear bin folder contents to remove old openglrenderer.exe
+ * run mingw32-make clean
+ * then after that run mingw32-make to run the makefile and build the exe again
+ * then finally run the exe with ./openglrenderer.exe
+ */
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <iostream>
+#include <math.h>
+
+#include "shader.h"
+#include <filesystem>
+
+const unsigned int WIDTH = 800;
+const unsigned int HEIGHT { 600 };
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window) {
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+
+int main() {
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Opengl Renderer", NULL, NULL);
+    if (window == NULL) {
+        std::cout << "Failed to create GLFW window" << '\n';
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+
+    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
+        std::cout << "Failed to initialize GLAD" << '\n';
+        return -1;
+    }
+
+    //glViewport(0,0,WIDTH,HEIGHT);
+
+    Shader ourShader("shaders/vert.vs", "shaders/frag.fs");
+    
+    
+
+    // vertex input
+    float vertices[] = {
+       // first triangle
+       // positions         // colors
+       0.0f, 0.5f, 0.0f,    0.0f, 0.0f, 1.0f,            // top
+       -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,           // bottom left
+       0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f            //bottom right
+    };
+
+    
+
+    unsigned int VBO;
+    glGenBuffers(1, &VBO); // generates 1 buffer object and stores it's reference ID in VBO (the buffer object is instantiated behind the scenes)
+   
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+  
+    // // EBO
+    // unsigned int EBO;
+    // glGenBuffers(1, &EBO);
+
+
+    // bind vertex array object
+    glBindVertexArray(VAO);
+    // bind buffer object to buffer type target
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // any calls to the buffer type target will be used to configure the currently bound buffer in our case VBO
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+   
+    // EBO Binding
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+
+
+
+
+    //next we specify how Opengl should interpret the vertex buffer data (i.e, vertex input data currently in memory)
+    // the 0 index here in the first param is 0 because we set the layout (location = 0) in the vertex shader for the position location
+    // a vec3 hence the 3 for the second param (size of the vertex attribute)
+    // 3rd attrib param specifies the type (vec3 are made of floats)
+    // 4th param is if we want the data to be normalized (no in this case)
+    // 5th param is stride (space between consecutive vertex attributes, since we know the array is tightly packed, we could've used 0 which auto determine's stride from opengl)
+    // 6th param is an offset of where the position data begins in the buffer
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);   // this enables the vertex attribute at index we set at the layout (location = ?) to be active
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+   
+
+   
+    // render loop
+    while(!glfwWindowShouldClose(window)) {
+         // input
+        processInput(window);
+
+
+
+        glClearColor(0.2f, 0.3f, 0.25f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+       
+        // rendering commands here
+        //glUseProgram(shaderProgram);
+        ourShader.use();
+
+        // float timeVal = glfwGetTime();
+        // float offsetValue = (sin(timeVal));
+        // ourShader.setVector3("offset", offsetValue, 0.0f, 0.0f);
+        // float timeValue = glfwGetTime();
+        // float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+        // int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+        // glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES,0, 3);
+        
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // wireframe mode
+        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        // check and call event
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // de-allocate resources
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+
+    glfwTerminate();
+    return 0;
+}
