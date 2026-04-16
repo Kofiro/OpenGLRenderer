@@ -27,6 +27,7 @@ public:
 
     void setVector3(const std::string &name, float x, float y, float z) const;
 
+
 private:
     // utility function for checking shader compilation/linking errors
     void checkCompileErrors(unsigned int shader, std::string type) {
