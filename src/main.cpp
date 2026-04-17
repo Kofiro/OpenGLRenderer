@@ -20,14 +20,12 @@
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT { 600 };
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-}
+float mixVal = 0.2f;
 
-void processInput(GLFWwindow* window) {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+void processMix(GLFWwindow* window, float *mixValue);
 
 
 int main() {
@@ -128,9 +126,9 @@ int main() {
 
 
     // set texture wrapping and filtering options on currently bound texture object
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     int width, height, nrChannels;
@@ -158,6 +156,7 @@ int main() {
     // reset texture image data
    
     stbi_set_flip_vertically_on_load(true);
+    
     data = stbi_load("textures/awesomeface.png", &width, &height, &nrChannels, 0);
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, data);
@@ -189,8 +188,9 @@ int main() {
 
         // rendering commands here
         //glUseProgram(shaderProgram);
-        //ourShader.use();
-
+        ourShader.use();
+        
+        ourShader.setFloat("mixVal", mixVal);
 
         
         glBindVertexArray(VAO);
@@ -211,4 +211,36 @@ int main() {
 
     glfwTerminate();
     return 0;
+}
+
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window) {
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+        processMix(window, &mixVal);
+}
+
+void processMix(GLFWwindow* window, float *mixvalue) {
+    float& mix = *mixvalue;
+
+    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        mixVal = mixVal + 0.001f;
+        if(mixVal >= 1.0f)
+            mixVal = 1.0f;
+
+
+    } else if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        mixVal = mixVal - 0.001f;
+        if(mixVal <= 0.0f)
+            mixVal = 0.0f;
+    } 
+
+    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        std::cout << "mix value is " << mixVal << std::endl;
+    }
 }

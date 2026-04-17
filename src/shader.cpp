@@ -67,7 +67,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     }
 
     void Shader::setFloat(const std::string &name, float value) const {
-        glUniform1f(glGetUniformLocation(ID, name.c_str()), (int)value);
+        glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
     }
 
     void Shader::setVector3(const std::string &name, float x, float y, float z) const {
