@@ -63,9 +63,19 @@ int main() {
     float vertices[] = {
        // first triangle
        // positions         // colors                   // texture coords
-       0.0f, 0.5f, 0.0f,    0.0f, 0.0f, 1.0f,           0.5f, 1.0f, // top // top
-       -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,            0.0f, 0.0f,// bottom left
-       0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,             1.0f, 0.0f//bottom right
+       0.5f, 0.5f, 0.0f,    0.0f, 0.0f, 1.0f,           1.0f, 1.0f,     // top right 
+       0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,           1.0f, 0.0f,     // bottom right
+       -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,           0.0f, 0.0f,     // bottom left
+       -0.5f, 0.5f, 0.0f,   1.0f, 1.0f, 0.0f,           0.0f, 1.0f      // top left
+
+       // 3 -- 0
+       // 2 -- 1
+    };
+
+    unsigned int indices[] = {
+        0, 1, 2,
+        2, 3, 0
+        
     };
 
     
@@ -77,15 +87,10 @@ int main() {
     glGenVertexArrays(1, &VAO);
   
     // // EBO
-    // unsigned int EBO;
-    // glGenBuffers(1, &EBO);
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
 
-    // texture object
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-
+   
     // bind vertex array object
     glBindVertexArray(VAO);
     // bind buffer object to buffer type target
@@ -95,12 +100,8 @@ int main() {
 
    
     // EBO Binding
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-
-
-
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     //next we specify how Opengl should interpret the vertex buffer data (i.e, vertex input data currently in memory)
     // the 0 index here in the first param is 0 because we set the layout (location = 0) in the vertex shader for the position location
@@ -119,6 +120,12 @@ int main() {
     glEnableVertexAttribArray(2);
 
     // texture
+    // texture object
+    unsigned int texture, texture2;
+    glGenTextures(1, &texture);
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
 
     // set texture wrapping and filtering options on currently bound texture object
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -136,8 +143,33 @@ int main() {
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
+
+
+    // second texture
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    // set texture wrapping params
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // reset texture image data
+   
+    stbi_set_flip_vertically_on_load(true);
+    data = stbi_load("textures/awesomeface.png", &width, &height, &nrChannels, 0);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
     
+    stbi_image_free(data);
     
+    ourShader.use();
+    ourShader.setInt("texture1", 0);
+    //glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
+    ourShader.setInt("texture2", 1);
 
    
     // render loop
@@ -150,23 +182,21 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.25f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-       
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
         // rendering commands here
         //glUseProgram(shaderProgram);
-        ourShader.use();
+        //ourShader.use();
 
-        // float timeVal = glfwGetTime();
-        // float offsetValue = (sin(timeVal));
-        // ourShader.setVector3("offset", offsetValue, 0.0f, 0.0f);
-        // float timeValue = glfwGetTime();
-        // float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-        // int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-        // glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES,0, 3);
         
+        glBindVertexArray(VAO);
+        //glDrawArrays(GL_TRIANGLES,0, 3);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // wireframe mode
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // check and call event
@@ -177,6 +207,7 @@ int main() {
     // de-allocate resources
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
 
     glfwTerminate();
     return 0;
