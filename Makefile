@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -I"C:\GLFW\include" -I"C:\GLFW\include\glad"
+CFLAGS = -I"C:\GLFW\include" -I"C:\GLFW\include\glad" -Iinclude
 LFLAGS = -L"C:\GLFW\lib" -lglfw3 -lopengl32 -lgdi32
 
 SRC = src/main.cpp src/shader.cpp src\glad.c
