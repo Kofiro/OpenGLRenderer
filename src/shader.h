@@ -8,6 +8,12 @@
 #include <sstream>
 #include <iostream>
 
+// glm opengl math library
+// glm includes
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 class Shader {
 public:
     // the program ID
@@ -26,6 +32,8 @@ public:
     void setFloat(const std::string &name, float value) const;
 
     void setVector3(const std::string &name, float x, float y, float z) const;
+
+    void setMatrix4(const std::string &name, glm::mat4 mat4) const;
 
 
 private:

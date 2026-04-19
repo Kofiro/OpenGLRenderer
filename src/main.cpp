@@ -7,10 +7,7 @@
  */
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-// glm includes
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+
 
 
 #include <iostream>
@@ -60,12 +57,6 @@ int main() {
 
     Shader ourShader("shaders/vert.vs", "shaders/frag.fs");
     
-    // glm test
-    glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-    glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 1.0f));
-    vec = trans * vec;
-    std::cout << vec.x << vec.y << vec.z << std::endl;
     
     
 
@@ -73,10 +64,10 @@ int main() {
     float vertices[] = {
        // first triangle
        // positions         // colors                   // texture coords
-       0.5f, 0.5f, 0.0f,    0.0f, 0.0f, 1.0f,           1.0f, 1.0f,     // top right 
-       0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,           1.0f, 0.0f,     // bottom right
-       -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,           0.0f, 0.0f,     // bottom left
-       -0.5f, 0.5f, 0.0f,   1.0f, 1.0f, 0.0f,           0.0f, 1.0f      // top left
+       0.5f, 0.5f, 0.0f,    /*0.0f, 0.0f, 1.0f,*/           1.0f, 1.0f,     // top right 
+       0.5f, -0.5f, 0.0f,   /*0.0f, 1.0f, 0.0f,*/           1.0f, 0.0f,     // bottom right
+       -0.5f, -0.5f, 0.0f,  /*1.0f, 0.0f, 0.0f,*/           0.0f, 0.0f,     // bottom left
+       -0.5f, 0.5f, 0.0f,   /*1.0f, 1.0f, 0.0f,*/           0.0f, 1.0f      // top left
 
        // 3 -- 0
        // 2 -- 1
@@ -120,14 +111,14 @@ int main() {
     // 4th param is if we want the data to be normalized (no in this case)
     // 5th param is stride (space between consecutive vertex attributes, since we know the array is tightly packed, we could've used 0 which auto determine's stride from opengl)
     // 6th param is an offset of where the position data begins in the buffer
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);   // this enables the vertex attribute at index we set at the layout (location = ?) to be active
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    // glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // texture
     // texture object
@@ -182,6 +173,8 @@ int main() {
     //glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
     ourShader.setInt("texture2", 1);
 
+    
+
    
     // render loop
     while(!glfwWindowShouldClose(window)) {
@@ -204,13 +197,37 @@ int main() {
         
         ourShader.setFloat("mixVal", mixVal);
 
+        // translate +  rotation over time
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.0f, 0.0f, 0.0f));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        
+        
+
+        ourShader.setMatrix4("transform", trans);
         
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES,0, 3);
         //glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // wireframe mode
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
+        float scaleAmt = sin(glfwGetTime());
+        trans = glm::scale(trans, glm::vec3(scaleAmt, scaleAmt, scaleAmt));
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "transform"), 1, GL_FALSE, &trans[0][0]);
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        trans = glm::mat4(1.0f);
+        float motion = sin(glfwGetTime());
+        trans = glm::translate(trans, glm::vec3(0.5f * (motion), 0.5f, 0.0f));
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "transform"), 1, GL_FALSE, glm::value_ptr(trans));
+
+        
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        
         // check and call event
         glfwSwapBuffers(window);
         glfwPollEvents();
