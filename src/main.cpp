@@ -64,13 +64,54 @@ int main() {
     float vertices[] = {
        // first triangle
        // positions         // colors                   // texture coords
-       0.5f, 0.5f, 0.0f,    /*0.0f, 0.0f, 1.0f,*/           1.0f, 1.0f,     // top right 
-       0.5f, -0.5f, 0.0f,   /*0.0f, 1.0f, 0.0f,*/           1.0f, 0.0f,     // bottom right
-       -0.5f, -0.5f, 0.0f,  /*1.0f, 0.0f, 0.0f,*/           0.0f, 0.0f,     // bottom left
-       -0.5f, 0.5f, 0.0f,   /*1.0f, 1.0f, 0.0f,*/           0.0f, 1.0f      // top left
+    //    0.5f, 0.5f, 0.0f,    /*0.0f, 0.0f, 1.0f,*/           1.0f, 1.0f,     // top right 
+    //    0.5f, -0.5f, 0.0f,   /*0.0f, 1.0f, 0.0f,*/           1.0f, 0.0f,     // bottom right
+    //    -0.5f, -0.5f, 0.0f,  /*1.0f, 0.0f, 0.0f,*/           0.0f, 0.0f,     // bottom left
+    //    -0.5f, 0.5f, 0.0f,   /*1.0f, 1.0f, 0.0f,*/           0.0f, 1.0f      // top left
 
        // 3 -- 0
        // 2 -- 1
+       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
     unsigned int indices[] = {
@@ -80,6 +121,7 @@ int main() {
     };
 
     
+    
 
     unsigned int VBO;
     glGenBuffers(1, &VBO); // generates 1 buffer object and stores it's reference ID in VBO (the buffer object is instantiated behind the scenes)
@@ -88,8 +130,8 @@ int main() {
     glGenVertexArrays(1, &VAO);
   
     // // EBO
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
+    // unsigned int EBO;
+    // glGenBuffers(1, &EBO);
 
    
     // bind vertex array object
@@ -101,8 +143,8 @@ int main() {
 
    
     // EBO Binding
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     //next we specify how Opengl should interpret the vertex buffer data (i.e, vertex input data currently in memory)
     // the 0 index here in the first param is 0 because we set the layout (location = 0) in the vertex shader for the position location
@@ -198,35 +240,32 @@ int main() {
         ourShader.setFloat("mixVal", mixVal);
 
         // translate +  rotation over time
-        glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(0.0f, 0.0f, 0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-        
-        
+        // glm::mat4 trans = glm::mat4(1.0f);
+        // trans = glm::translate(trans, glm::vec3(0.0f, 0.0f, 0.0f));
+        // trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        ourShader.setMatrix4("transform", trans);
+        // modelmatrix
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    // view matrix
+    glm::mat4 view = glm::mat4(1.0f);
+    // translate scene in reverse direction of where we want to move
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+    // projection matrix
+    glm::mat4 projection;
+    projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 100.0f);
+        
+        ourShader.setMatrix4("model", model);
+        ourShader.setMatrix4("view", view);
+        ourShader.setMatrix4("projection", projection);
+
+        // ourShader.setMatrix4("transform", trans);
         
         glBindVertexArray(VAO);
-        //glDrawArrays(GL_TRIANGLES,0, 3);
+        glDrawArrays(GL_TRIANGLES,0, 36);
         //glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
-        float scaleAmt = sin(glfwGetTime());
-        trans = glm::scale(trans, glm::vec3(scaleAmt, scaleAmt, scaleAmt));
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "transform"), 1, GL_FALSE, &trans[0][0]);
-
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        trans = glm::mat4(1.0f);
-        float motion = sin(glfwGetTime());
-        trans = glm::translate(trans, glm::vec3(0.5f * (motion), 0.5f, 0.0f));
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID, "transform"), 1, GL_FALSE, glm::value_ptr(trans));
-
-        
-
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         
         // check and call event
         glfwSwapBuffers(window);
@@ -236,7 +275,7 @@ int main() {
     // de-allocate resources
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    //glDeleteBuffers(1, &EBO);
 
     glfwTerminate();
     return 0;
