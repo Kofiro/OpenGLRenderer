@@ -8,46 +8,32 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-
-
 #include <iostream>
 #include <math.h>
-
-#include "shader.h"
-#include <filesystem>
-
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-const unsigned int WIDTH = 800;
-const unsigned int HEIGHT { 600 };
-
-float mixVal = 0.2f;
-
-float deltaTime = 0.0f; // time between current frame and last frame
-float lastFrame = 0.0f; // time of last frame
-
-
-// camera pos
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-// camera direction
-glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-// cam right
-glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, cameraDirection));
-// cam up
-glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-// camera front
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-
+#include "shader.h"
+#include "camera.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-void processMix(GLFWwindow* window, float *mixValue);
+
+const unsigned int WIDTH = 800;
+const unsigned int HEIGHT { 600 };
+
+// Camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float deltaTime = 0.0f; // time between current frame and last frame
+float lastFrame = 0.0f; // time of last frame
+// camera offsetsince last frame
+float lastX = WIDTH/2.0f, lastY = HEIGHT/2.0f; // initialize to place mouse at center of screen (800, 600) screen size
+bool firstMouse = true;
 
 
 
@@ -66,6 +52,12 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    
+    // hide cursor
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);   // moue movement input (tell glfw to listen to events)
+    // scroll
+    glfwSetScrollCallback(window, scroll_callback);
 
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
@@ -279,29 +271,17 @@ int main() {
         //glUseProgram(shaderProgram);
         ourShader.use();
         
-        ourShader.setFloat("mixVal", mixVal);
-
-        
-
-        // translate +  rotation over time
-        // glm::mat4 trans = glm::mat4(1.0f);
-        // trans = glm::translate(trans, glm::vec3(0.0f, 0.0f, 0.0f));
-        // trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
-        // modelmatrix
-        // glm::mat4 model = glm::mat4(1.0f);
-        // model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-
 
         // view matrix
         glm::mat4 view = glm::mat4(1.0f);
         // translate scene in reverse direction of where we want to move
         //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, worldUp);
+        //view = glm::lookAt(cameraPos, cameraPos + cameraFront, worldUp);
+        view = camera.GetViewMatrix();
 
         // projection matrix
         glm::mat4 projection;
-        projection = glm::perspective(glm::radians(60.0f), 800.0f/600.0f, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(camera.Zoom), (float)WIDTH/(float) HEIGHT, 0.1f, 100.0f);
         
        // ourShader.setMatrix4("model", model);
         ourShader.setMatrix4("view", view);
@@ -345,34 +325,40 @@ void processInput(GLFWwindow* window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    //processMix(window, &mixVal);
     const float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
+        camera.ProcessKeyboard(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
-void processMix(GLFWwindow* window, float *mixvalue) {
-    float& mix = *mixvalue;
-
-    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        mixVal = mixVal + 0.001f;
-        if(mixVal >= 1.0f)
-            mixVal = 1.0f;
 
 
-    } else if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        mixVal = mixVal - 0.001f;
-        if(mixVal <= 0.0f)
-            mixVal = 0.0f;
-    } 
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
 
-    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        std::cout << "mix value is " << mixVal << std::endl;
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+    if (firstMouse){
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
     }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;   // reversed since y coords range from bottom to top
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
+    camera.ProcessMoueScroll(static_cast<float>(yoffset));
+    
 }
