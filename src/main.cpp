@@ -253,7 +253,9 @@ int main() {
     while(!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        lastFrame = currentFrame;   
+
+        std::cout << "DeltaTime: " << deltaTime << std::endl;
          // input
         processInput(window);
 

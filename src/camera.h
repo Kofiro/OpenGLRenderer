@@ -106,7 +106,7 @@ public:
 private:
     // calculates the front vector from the Camera's updated Euler Angles
     void updateCameraVectors() {
-        // calc new front vector
+        // calc new front vector, for look Around
         glm::vec3 front;
         front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
         front.y = sin(glm::radians(Pitch));
